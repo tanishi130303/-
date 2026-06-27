@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Code</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>救急循環器クイズBot</title>
+  <style>
+    :root {
+      --bg: #0f1923;
+      --panel: #1a2735;
+      --border: #2a3a4a;
+      --red: #e74c3c;
+      --red-glow: #ff6b6b;
+      --green: #2ecc71;
+      --green-glow: #5dde8e;
+      --blue: #3498db;
+      --blue-glow: #6bb5e8;
+      --text: #e0e8f0;
+      --text-dim: #8899aa;
+      --text-bright: #ffffff;
+      --gold: #f1c40f;
+      --chat-bg: #152230;
+      --bubble-user: #1c3a52;
+      --bubble-bot: #1a2735;
+      --accent-pulse: #e74c3c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-bottom: 2px solid var(--red);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 20px rgba(231, 76, 60, 0.15);
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      background: var(--red);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      animation: pulse-icon 2s infinite;
+    }
+
+    @keyframes pulse-icon {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(231, 76, 60, 0);
+      }
+    }
+
+    .header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .header .sub {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-badge {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      text-align: center;
+      min-width: 50px;
+    }
+
+    .stat-badge .val {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .stat-badge .lbl {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+
+    .stat-badge.correct .val {
+      color: var(--green);
+    }
+
+    .stat-badge.wrong .val {
+      color: var(--red);
+    }
+
+    .stat-badge.streak .val {
+      color: var(--gold);
+    }
+
+    /* Chat area */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: calc(100vh - 210px);
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+      max-width: 95%;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .bot .avatar {
+      background: var(--red);
+    }
+
+    .user .avatar {
+      background: var(--blue);
+    }
+
+    .bubble {
+      background: var(--bubble-bot);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    .bot .bubble {
+      border-top-left-radius: 4px;
+    }
+
+    .user .bubble {
+      background: var(--bubble-user);
+      border-top-right-radius: 4px;
+    }
+
+    /* Option buttons */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .opt-btn {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: left;
+      transition: all 0.2s;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+
+    .opt-btn:hover {
+      border-color: var(--blue);
+      background: #1c3044;
+    }
+
+    .opt-btn:active {
+      transform: scale(0.98);
+    }
+
+    .opt-btn.correct-choice {
+      border-color: var(--green);
+      background: #1a3d2a;
+      color: var(--green-glow);
+      font-weight: 600;
+    }
+
+    .opt-btn.wrong-choice {
+      border-color: var(--red);
+      background: #3d1a1a;
+      color: var(--red-glow);
+    }
+
+    .opt-btn:disabled {
+      pointer-events: none;
+      opacity: 0.75;
+    }
+
+    /* Feedback box */
+    .feedback {
+      margin-top: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: rgba(46, 204, 113, 0.12);
+      border: 1px solid var(--green);
+      color: var(--green-glow);
+    }
+
+    .feedback.wrong {
+      background: rgba(231, 76, 60, 0.12);
+      border: 1px solid var(--red);
+      color: var(--red-glow);
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #c0392b;
+    }
+
+    .btn-secondary {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--blue);
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+
+    .category-select {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* ECG monitor effect */
+    .ecg-line {
+      height: 2px;
+      background: var(--green);
+      position: relative;
+      overflow: hidden;
+      opacity: 0.4;
+      margin: 4px 0;
+      border-radius: 1px;
+    }
+
+    .ecg-line::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -60px;
+      width: 60px;
+      height: 10px;
+      background: repeating-linear-gradient(90deg,
+          transparent 0px, var(--green) 2px, transparent 3px,
+          transparent 8px, var(--green) 10px, transparent 11px,
+          transparent 14px, var(--green) 16px, transparent 28px);
+      animation: ecg-scan 4s linear infinite;
+    }
+
+    @keyframes ecg-scan {
+      from {
+        left: -60px;
+      }
+
+      to {
+        left: 110%;
+      }
+    }
+
+    .scroll-hint {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 4px;
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin: 8px 0;
+    }
+
+    .progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s;
+    }
+
+    .progress-dot.done {
+      background: var(--green);
+    }
+
+    .progress-dot.current {
+      background: var(--blue);
+      animation: pulse-dot 1s infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.6);
+      }
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+      font-weight: 600;
+    }
+
+    .tag-danger {
+      background: rgba(231, 76, 60, 0.2);
+      color: var(--red-glow);
+    }
+
+    .tag-warn {
+      background: rgba(241, 196, 15, 0.2);
+      color: var(--gold);
+    }
+
+    .tag-info {
+      background: rgba(52, 152, 219, 0.2);
+      color: var(--blue-glow);
+    }
+
+    @media (max-width: 500px) {
+      .header {
+        padding: 8px 12px;
+      }
+
+      .header h1 {
+        font-size: 0.95rem;
+      }
+
+      .bubble {
+        font-size: 0.82rem;
+        padding: 10px 12px;
+      }
+
+      .opt-btn {
+        font-size: 0.78rem;
+        padding: 8px 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="header-icon">⚡</div>
+    <div>
+      <h1>救急循環器クイズ ER-Bot</h1>
+      <div class="sub">初期対応トレーニング</div>
+    </div>
+    <div class="header-right">
+      <div class="stat-badge correct">
+        <div class="val" id="scoreCorrect">0</div>
+        <div class="lbl">正解</div>
+      </div>
+      <div class="stat-badge wrong">
+        <div class="val" id="scoreWrong">0</div>
+        <div class="lbl">不正解</div>
+      </div>
+      <div class="stat-badge streak">
+        <div class="val" id="streakCount">0</div>
+        <div class="lbl">連続🔥</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ecg-line"></div>
+
+  <div class="chat-container" id="chatContainer"></div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-primary" id="btnNext" onclick="nextQuestion()">▶ 次の問題</button>
+    <button class="btn btn-secondary btn-small" onclick="resetQuiz()">🔄 リセット</button>
+    <select class="category-select" id="categoryFilter" onchange="filterCategory()">
+      <option value="all">📋 全分野</option>
+      <option value="antiarrhythmic">💊 抗不整脈薬</option>
+      <option value="ht">🩸 高血圧</option>
+      <option value="af">❤️ 心房細動(AF)</option>
+      <option value="vt">⚡ VT</option>
+      <option value="psvt">🔍 PSVT</option>
+      <option value="ecg">📈 心電図</option>
+    </select>
+    <span style="font-size:0.7rem;color:var(--text-dim);margin-left:auto;" id="qRemaining"></span>
+  </div>
+
+  <script>
+    // ── Question Bank ──
+    const questions = [
+      // ── 抗不整脈薬 ──
+      {
+        id: "aa01",
+        category: "antiarrhythmic",
+        text: "β遮断薬の禁忌として正しいのはどれか？",
+        options: ["気管支喘息", "高血圧", "糖尿病", "骨粗鬆症"],
+        correct: 0,
+        explanation: "β遮断薬は気道狭窄を誘発するため、気管支喘息では禁忌です。COPD合併例ではβ1選択性のビソプロロールが望ましいとされています。",
+        tags: [{
+          t: "禁忌",
+          c: "danger"
+        }]
+      },
+      {
+        id: "aa02",
+        category: "antiarrhythmic",
+        text: "非ジヒドロピリジン系Ca拮抗薬（ベラパミル）が禁忌なのはどれか？",
+        options: ["HFrEF（EF≦40%）", "高血圧緊急症", "発作性上室性頻拍", "気管支喘息"],
+        correct: 0,
+        explanation: "ベラパミルは陰性変力作用により心不全を悪化させるため、HFrEF（EF≦40%）では禁忌です。またWPW症候群＋AFも禁忌です。",
+        tags: [{
+          t: "禁忌",
+          c: "danger"
+        }, {
+          t: "HFrEF",
+          c: "warn"
+        }]
+      },
+      {
+        id: "aa03",
+        category: "antiarrhythmic",
+        text: "Class I群抗不整脈薬の最重要禁忌は何か？",
+        options: ["器質的心疾患", "高齢者", "肝機能障害", "電解質異常"],
+        correct: 0,
+        explanation: "CAST試験（1989年）で心筋梗塞後のIc群投与が総死亡率を有意に増加させた教訓から、虚血性心疾患・心筋梗塞後・EF低下心不全・心筋症・有意な左室肥大がある場合はClass I群全般が禁忌です。",
+        tags: [{
+          t: "CAST試験",
+          c: "danger"
+        }, {
+          t: "最重要",
+          c: "danger"
+        }]
+      },
+      {
+        id: "aa04",
+        category: "antiarrhythmic",
+        text: "Ia群抗不整脈薬の心電図変化の特徴は？",
+        options: ["QRS延長＋QT延長", "QRS短縮＋QT短縮", "QRS延長のみ・QT不変", "QRS不変・QT短縮"],
+        correct: 0,
+        explanation: "Ia群はNaチャネル遮断に加えてKチャネル遮断も持つため、QRS延長＋QT延長をきたします。QT延長がある患者ではTdP誘発リスクがあるため禁忌です。",
+        tags: [{
+          t: "Ia群",
+          c: "info"
+        }, {
+          t: "TdP",
+          c: "danger"
+        }]
+      },
+      {
+        id: "aa05",
+        category: "antiarrhythmic",
+        text: "Ic群（ピルシカイニド）使用前に必ず確認すべき3条件は？",
+        options: [
+          "①EF≧50% ②虚血性心疾患の否定 ③有意な左室肥大の否定",
+          "①EF≧30% ②腎機能正常 ③電解質正常",
+          "①年齢＜65歳 ②非喫煙 ③BMI正常",
+          "①QTc正常 ②肝機能正常 ③eGFR≧60"
+        ],
+        correct: 0,
+        explanation: "Ic群は器質的心疾患のない発作性AFの第一選択ですが、①EF≧50%（心エコー必須）、②虚血性心疾患の否定、③有意な左室肥大の否定の3条件を満たす必要があります。",
+        tags: [{
+          t: "必須確認",
+          c: "warn"
+        }, {
+          t: "Icフラッター対策",
+          c: "danger"
+        }]
+      },
+      {
+        id: "aa06",
+        category: "antiarrhythmic",
+        text: "「Icフラッター」対策として事前に行うべきことは？",
+        options: [
+          "β遮断薬または非DHP系Ca拮抗薬で房室結節の伝導を抑制する",
+          "抗凝固薬を必ず併用する",
+          "アミオダロンを予防投与する",
+          "ATP急速静注を準備する"
+        ],
+        correct: 0,
+        explanation: "Ic群によるAF停止過程で心房粗動に移行し1:1房室伝導（Icフラッター）をきたすリスクがあります。事前にβ遮断薬または非DHP系Ca拮抗薬で房室結節の伝導を抑制しておく必要があります。",
+        tags: [{
+          t: "Icフラッター",
+          c: "danger"
+        }, {
+          t: "必須対策",
+          c: "warn"
+        }]
+      },
+      {
+        id: "aa07",
+        category: "antiarrhythmic",
+        text: "ジソピラミド（Ia群）の特徴的な禁忌は？",
+        options: ["緑内障・前立腺肥大（尿閉）", "気管支喘息", "腎不全", "甲状腺機能亢進症"],
+        correct: 0,
+        explanation: "ジソピラミドはIa群の中でも強い抗コリン作用を持ち、緑内障・前立腺肥大（尿閉）は添付文書上も禁忌です。この抗コリン作用はジソピラミドに限定的で、キニジンは弱く、プロカインアミドはほぼありません。",
+        tags: [{
+          t: "ジソピラミド",
+          c: "danger"
+        }, {
+          t: "抗コリン作用",
+          c: "info"
+        }]
+      },
+      // ── 高血圧 ──
+      {
+        id: "ht01",
+        category: "ht",
+        text: "糖尿病＋CKD（蛋白尿あり）の高血圧患者に必須の降圧薬は？",
+        options: ["ARB/ACE阻害薬（RAS系）", "Ca拮抗薬", "サイアザイド系利尿薬", "β遮断薬"],
+        correct: 0,
+        explanation: "糖尿病やCKD＋蛋白尿がある場合は、ARBまたはACE阻害薬（RAS系）が必須です。腎保護作用があり、蛋白尿減少効果も期待できます。",
+        tags: [{
+          t: "第一選択",
+          c: "info"
+        }, {
+          t: "腎保護",
+          c: "warn"
+        }]
+      },
+      {
+        id: "ht02",
+        category: "ht",
+        text: "妊婦の高血圧で禁忌なのはどれか？",
+        options: ["ACE阻害薬/ARB", "メチルドパ", "ラベタロール", "ニフェジピン徐放"],
+        correct: 0,
+        explanation: "ACE阻害薬/ARBは胎児腎障害のリスクがあるため妊婦には禁忌です。妊婦にはメチルドパ、ラベタロール、ニフェジピン徐放が使用可能です。",
+        tags: [{
+          t: "禁忌",
+          c: "danger"
+        }, {
+          t: "妊婦",
+          c: "warn"
+        }]
+      },
+      {
+        id: "ht03",
+        category: "ht",
+        text: "JSH2019の併用療法の原則として正しいのは？",
+        options: [
+          "単剤増量より少量2剤併用を優先する",
+          "最大用量まで単剤を増量してから併用する",
+          "常に3剤併用から開始する",
+          "利尿薬は最後の手段として使用する"
+        ],
+        correct: 0,
+        explanation: "JSH2019では、単剤増量より少量2剤併用を優先します。推奨併用は A＋C、C＋D、A＋D のいずれかです。Step 1→2→3→4と段階的に進めます。",
+        tags: [{
+          t: "JSH2019",
+          c: "info"
+        }]
+      },
+      {
+        id: "ht04",
+        category: "ht",
+        text: "高尿酸血症・痛風合併の高血圧患者で推奨されるのは？",
+        options: [
+          "ARB（ロサルタン）＋Ca拮抗薬",
+          "サイアザイド系利尿薬",
+          "β遮断薬単独",
+          "ACE阻害薬＋利尿薬"
+        ],
+        correct: 0,
+        explanation: "痛風合併例では利尿薬は尿酸値を上昇させるため避けます。ロサルタン（ARB）は尿酸排泄促進作用があり、Ca拮抗薬とともに推奨されます。",
+        tags: [{
+          t: "痛風",
+          c: "warn"
+        }, {
+          t: "ロサルタン",
+          c: "info"
+        }]
+      },
+      // ── 心房細動(AF) ──
+      {
+        id: "af01",
+        category: "af",
+        text: "AF診断後、最初に評価すべきことは？",
+        options: ["血行動態の評価", "CHADS2スコアの計算", "心エコーの予約", "抗凝固薬の処方"],
+        correct: 0,
+        explanation: "AF診断後はまず血行動態を評価します。不安定な場合は同期カルディオバージョンを直ちに行い、薬物を待ってはいけません。安定していればレートコントロール主体で対応します。",
+        tags: [{
+          t: "初期対応",
+          c: "danger"
+        }, {
+          t: "最優先",
+          c: "danger"
+        }]
+      },
+      {
+        id: "af02",
+        category: "af",
+        text: "AF発症から48時間超または発症時間不明の場合の対応は？",
+        options: [
+          "うかつなリズムコントロールは禁忌。まず抗凝固療法＋レートコントロール",
+          "緊急カルディオバージョンを実施",
+          "Ic群を直ちに投与",
+          "アミオダロン静注で除細動"
+        ],
+        correct: 0,
+        explanation: "48時間ルール：発症48時間超または不明の場合は血栓塞栓症リスクがあるため、うかつなリズムコントロールは禁忌です。3週間以上の抗凝固後、または経食道心エコーで血栓否定後に除細動を行います。",
+        tags: [{
+          t: "48時間ルール",
+          c: "danger"
+        }, {
+          t: "禁忌",
+          c: "danger"
+        }]
+      },
+      {
+        id: "af03",
+        category: "af",
+        text: "HFrEF（EF≦40%）のAFにおけるレートコントロールの第一選択は？",
+        options: [
+          "β遮断薬 ± ジゴキシン",
+          "ベラパミル（非DHP系Ca拮抗薬）",
+          "Ic群（ピルシカイニド）",
+          "アミオダロン"
+        ],
+        correct: 0,
+        explanation: "HFrEFでは非DHP系Ca拮抗薬（ベラパミル）は陰性変力作用のため禁忌です。β遮断薬±ジゴキシンが第一選択となります。",
+        tags: [{
+          t: "HFrEF",
+          c: "warn"
+        }, {
+          t: "レートコントロール",
+          c: "info"
+        }]
+      },
+      {
+        id: "af04",
+        category: "af",
+        text: "器質的心疾患のないAF患者のリズムコントロール第一選択は？",
+        options: [
+          "Ic群（ピルシカイニド、フレカイニド）またはアブレーション",
+          "アミオダロン",
+          "β遮断薬単独",
+          "ジゴキシン"
+        ],
+        correct: 0,
+        explanation: "器質的心疾患がない（EF≧50%、虚血なし、有意なLVHなし、弁膜症なし）場合、Ic群またはアブレーションが第一選択です。EAST-AFNET 4試験では早期AFの積極的リズムコントロールが心血管複合イベントを約20%減少させることが示されています。",
+        tags: [{
+          t: "リズムコントロール",
+          c: "info"
+        }, {
+          t: "EAST-AFNET 4",
+          c: "warn"
+        }]
+      },
+      {
+        id: "af05",
+        category: "af",
+        text: "AFのレートコントロール目標心拍数は？",
+        options: ["安静時 ＜110 bpm", "安静時 ＜60 bpm", "安静時 ＜80 bpm", "安静時 ＜130 bpm"],
+        correct: 0,
+        explanation: "RACE II試験に基づき、安静時心拍数＜110 bpmが目標とされています。厳格なコントロール（＜80 bpm）と比較して予後に差がなかったことが示されています。",
+        tags: [{
+          t: "RACE II",
+          c: "info"
+        }, {
+          t: "目標値",
+          c: "warn"
+        }]
+      },
+      // ── VT ──
+      {
+        id: "vt01",
+        category: "vt",
+        text: "安定VTの薬物治療の第一選択は？",
+        options: [
+          "アミオダロン125mg 緩徐静注（5%ブドウ糖液で希釈）",
+          "リドカイン100mg 静注",
+          "ベラパミル5mg 静注",
+          "ATP 10mg 急速静注"
+        ],
+        correct: 0,
+        explanation: "安定VTの第一選択はアミオダロン125mgを5%ブドウ糖液20mLで希釈し10分かけて緩徐静注します。生理食塩水では結晶化するため注意。無効ならβ遮断薬を追加します。",
+        tags: [{
+          t: "第一選択",
+          c: "info"
+        }, {
+          t: "アミオダロン",
+          c: "warn"
+        }]
+      },
+      {
+        id: "vt02",
+        category: "vt",
+        text: "器質的心疾患のあるVT患者にベラパミル静注を行うとどうなるか？",
+        options: [
+          "血圧低下＋心抑制でショックに陥る（禁忌）",
+          "VTが停止し洞調律に復帰する",
+          "心拍数が適度に低下する",
+          "特に問題はない"
+        ],
+        correct: 0,
+        explanation: "器質的心疾患のあるVTにベラパミルは絶対禁忌です。陰性変力作用と血管拡張作用により血圧低下＋心抑制でショックに陥ります。ただし特発性VT（ベラパミル感受性VT）では著効します。",
+        tags: [{
+          t: "絶対禁忌",
+          c: "danger"
+        }, {
+          t: "ショック",
+          c: "danger"
+        }]
+      },
+      {
+        id: "vt03",
+        category: "vt",
+        text: "虚血性VTやVT stormで特に重要な薬剤は？",
+        options: ["β遮断薬（ランジオロール）", "リドカイン", "ベラパミル", "ジゴキシン"],
+        correct: 0,
+        explanation: "虚血性VT・VT stormではβ遮断薬が極めて重要です。ランジオロール（負荷1mg＋持続0.04mg/kg/min〜）またはプロプラノロール2〜5mg緩徐静注を使用します。",
+        tags: [{
+          t: "VT storm",
+          c: "danger"
+        }, {
+          t: "β遮断薬",
+          c: "warn"
+        }]
+      },
+      {
+        id: "vt04",
+        category: "vt",
+        text: "非循環器医が安定VTをみた初期対応として正しいのは？",
+        options: [
+          "アミオダロン125mg div → 無効ならβ遮断薬追加 → 循環器医に相談 → 電解質補正",
+          "DC cardioversionを直ちに実施",
+          "経過観察のみ",
+          "リドカインを第一選択とする"
+        ],
+        correct: 0,
+        explanation: "非循環器医の初期対応：安定VT→アミオダロン125mg div（5%ブドウ糖液で希釈）→無効ならβ遮断薬（ランジオロール）を追加→並行して循環器医に相談→電解質補正（K≧4.0、Mg補正）、虚血評価の流れです。",
+        tags: [{
+          t: "初期対応",
+          c: "info"
+        }, {
+          t: "非循環器医",
+          c: "warn"
+        }]
+      },
+      // ── PSVT ──
+      {
+        id: "psvt01",
+        category: "psvt",
+        text: "Narrow QRS頻拍で血行動態安定の場合の第一選択は？",
+        options: [
+          "ATP 5〜10mg 急速静注",
+          "ベラパミル 5mg 緩徐静注",
+          "アミオダロン 125mg 静注",
+          "カルディオバージョン"
+        ],
+        correct: 0,
+        explanation: "Narrow QRS頻拍で血行動態が安定している場合の第一選択はATP 5〜10mgの急速静注です。三方活栓から一気に投与し生食で後押しします。ゆっくり入れると効果が激減します。",
+        tags: [{
+          t: "第一選択",
+          c: "info"
+        }, {
+          t: "急速静注",
+          c: "warn"
+        }]
+      },
+      {
+        id: "psvt02",
+        category: "psvt",
+        text: "ATP急速静注が無効で、P波ありと確認された場合の対応は？",
+        options: [
+          "心房頻拍と診断し、Ca拮抗薬/β遮断薬でレートコントロール",
+          "直ちにカルディオバージョン",
+          "Ic群を投与",
+          "アミオダロンを追加"
+        ],
+        correct: 0,
+        explanation: "ATPによる一過性房室ブロック中に心房波を確認し、P波あり→心房頻拍と診断します。Ca拮抗薬/β遮断薬でレートコントロールを行います。鋸歯状波なら心房粗動です。",
+        tags: [{
+          t: "鑑別",
+          c: "info"
+        }, {
+          t: "心房頻拍",
+          c: "warn"
+        }]
+      },
+      {
+        id: "psvt03",
+        category: "psvt",
+        text: "ATP使用時に注意すべき併用薬は？",
+        options: [
+          "ジピリダモール（作用増強→半量以下に）",
+          "ワルファリン（作用減弱→倍量に）",
+          "スタチン（横紋筋融解症リスク）",
+          "NSAIDs（腎機能悪化）"
+        ],
+        correct: 0,
+        explanation: "ジピリダモール内服中はATPの作用が増強されるため半量以下に減量します。逆にテオフィリン・カフェイン常用では作用が減弱（拮抗）します。",
+        tags: [{
+          t: "薬物相互作用",
+          c: "warn"
+        }]
+      },
+      {
+        id: "psvt04",
+        category: "psvt",
+        text: "Wide QRS頻拍に対して避けるべき薬剤は？",
+        options: ["ATP / Ca拮抗薬 / ジゴキシン（WPW＋AFの可能性）", "アミオダロン", "β遮断薬", "リドカイン"],
+        correct: 0,
+        explanation: "Wide QRS頻拍ではWPW症候群＋AFの可能性があり、ATP/Ca拮抗薬/ジゴキシンは副伝導路伝導を促進しVF誘発リスクがあるため禁忌です。原則VTとして扱いアミオダロンで対応します。",
+        tags: [{
+          t: "禁忌",
+          c: "danger"
+        }, {
+          t: "WPW+AF",
+          c: "danger"
+        }]
+      },
+      // ── 心電図 ──
+      {
+        id: "ecg01",
+        category: "ecg",
+        text: "ベラパミル感受性VT（Belhassen VT）の心電図特徴は？",
+        options: [
+          "RBBB＋左軸偏位（左脚後枝領域由来）",
+          "LBBB＋右軸偏位",
+          "RBBB＋右軸偏位",
+          "LBBB＋正常軸"
+        ],
+        correct: 0,
+        explanation: "ベラパミル感受性VTは左室中隔（左脚後枝領域）由来で、心電図ではRBBB＋左軸偏位が特徴です。器質的心疾患のない特発性VTであり、ベラパミル静注が著効します。",
+        tags: [{
+          t: "Belhassen VT",
+          c: "info"
+        }, {
+          t: "RBBB+LAD",
+          c: "warn"
+        }]
+      },
+      {
+        id: "ecg02",
+        category: "ecg",
+        text: "RVOT-VTの心電図特徴は？",
+        options: [
+          "LBBB＋下方軸（右室流出路由来）",
+          "RBBB＋左軸偏位",
+          "LBBB＋左軸偏位",
+          "RBBB＋下方軸"
+        ],
+        correct: 0,
+        explanation: "RVOT-VT（右室流出路起源）はLBBB＋下方軸が特徴です。β遮断薬やベラパミルが有効で、ATPで停止することもあります。",
+        tags: [{
+          t: "RVOT-VT",
+          c: "info"
+        }, {
+          t: "LBBB+下方軸",
+          c: "warn"
+        }]
+      },
+      {
+        id: "ecg03",
+        category: "ecg",
+        text: "AVNRTの心電図でみられる特徴的な所見は？",
+        options: [
+          "P波がQRSに埋もれる（V1の疑似r'波、II,III,aVFの疑似s波）",
+          "P波がQRSの前に明瞭に見える",
+          "デルタ波を認める",
+          "QT延長が著明"
+        ],
+        correct: 0,
+        explanation: "AVNRT（房室結節リエントリー性頻拍）は最も多いPSVTで、P波はQRSに埋もれて見えにくいのが特徴です。V1で疑似r'波、II,III,aVFで疑似s波として観察されます。",
+        tags: [{
+          t: "AVNRT",
+          c: "info"
+        }, {
+          t: "疑似r'波",
+          c: "warn"
+        }]
+      },
+      {
+        id: "ecg04",
+        category: "ecg",
+        text: "心房粗動で2:1伝導となっている場合、心室レートは何bpmになりやすいか？",
+        options: ["ぴったり150 bpm", "約100 bpm", "約200 bpm", "約120 bpm"],
+        correct: 0,
+        explanation: "心房粗動の粗動レートは通常300 bpmであり、2:1伝導では心室レートがぴったり150 bpmになることが多いです。これは粗動を見抜く重要なヒントです。",
+        tags: [{
+          t: "心房粗動",
+          c: "info"
+        }, {
+          t: "150bpm",
+          c: "warn"
+        }]
+      }
+    ];
+    // ── State ──
+    let scoreCorrect = 0;
+    let scoreWrong = 0;
+    let streak = 0;
+    let currentQIndex = -1;
+    let answered = false;
+    let filteredQuestions = [...questions];
+    let questionOrder = [];
+    let orderIndex = 0;
+    // ── DOM refs ──
+    const chatContainer = document.getElementById('chatContainer');
+    const btnNext = document.getElementById('btnNext');
+    const scoreCorrectEl = document.getElementById('scoreCorrect');
+    const scoreWrongEl = document.getElementById('scoreWrong');
+    const streakCountEl = document.getElementById('streakCount');
+    const qRemaining = document.getElementById('qRemaining');
+    // ── Functions ──
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function addBotMessage(html) {
+      const div = document.createElement('div');
+      div.className = 'message bot';
+      div.innerHTML = `<div class="avatar">🤖</div><div class="bubble">${html}</div>`;
+      chatContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    function addUserMessage(text) {
+      const div = document.createElement('div');
+      div.className = 'message user';
+      div.innerHTML = `<div class="avatar">👤</div><div class="bubble">${escapeHtml(text)}</div>`;
+      chatContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    function escapeHtml(s) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return s.replace(/[&<>"']/g, c => map[c]);
+    }
+
+    function filterCategory() {
+      const cat = document.getElementById('categoryFilter').value;
+      if (cat === 'all') {
+        filteredQuestions = [...questions];
+      } else {
+        filteredQuestions = questions.filter(q => q.category === cat);
+      }
+      resetQuiz();
+    }
+
+    function resetQuiz() {
+      chatContainer.innerHTML = '';
+      scoreCorrect = 0;
+      scoreWrong = 0;
+      streak = 0;
+      currentQIndex = -1;
+      answered = false;
+      questionOrder = shuffle(filteredQuestions);
+      orderIndex = 0;
+      updateScores();
+      addBotMessage(`
+    <div style="font-size:1.1rem;font-weight:700;">🩺 救急循環器クイズを開始します</div>
+    <div style="margin-top:6px;color:var(--text-dim);">
+      分野：<strong>${document.getElementById('categoryFilter').selectedOptions[0].text}</strong>　｜　全 <strong>${filteredQuestions.length}</strong> 問<br>
+      「次の問題」ボタンでスタート！
+    </div>
+    <div style="margin-top:6px;font-size:0.7rem;color:var(--text-dim);">
+      ⚠ このクイズは学習用です。実際の臨床判断は必ず最新のガイドラインと患者背景に基づいて行ってください。
+    </div>
+  `);
+      btnNext.textContent = '▶ スタート';
+      btnNext.onclick = nextQuestion;
+      qRemaining.textContent = `残り ${filteredQuestions.length} 問`;
+    }
+
+    function updateScores() {
+      scoreCorrectEl.textContent = scoreCorrect;
+      scoreWrongEl.textContent = scoreWrong;
+      streakCountEl.textContent = streak;
+      qRemaining.textContent = `残り ${filteredQuestions.length - orderIndex} 問`;
+    }
+
+    function nextQuestion() {
+      if (orderIndex >= filteredQuestions.length) {
+        // All done
+        const total = scoreCorrect + scoreWrong;
+        const rate = total > 0 ? Math.round(scoreCorrect / total * 100) : 0;
+        let msg = '';
+        if (rate >= 90) msg = '🏆 素晴らしい！あなたはERのエースです！';
+        else if (rate >= 70) msg = '👍 良い線いってます。あと少し！';
+        else if (rate >= 50) msg = '📚 要復習です。もう一周しましょう。';
+        else msg = '💪 基礎から再確認を。継続が力です！';
+        addBotMessage(`
+      <div style="font-size:1.2rem;font-weight:700;">🎉 全問終了！</div>
+      <div style="margin-top:4px;">
+        正解：<span style="color:var(--green-glow);font-weight:700;">${scoreCorrect}</span>　
+        不正解：<span style="color:var(--red-glow);font-weight:700;">${scoreWrong}</span>　
+        正答率：<span style="font-weight:700;">${rate}%</span>
+      </div>
+      <div style="margin-top:6px;font-weight:600;">${msg}</div>
+    `);
+        btnNext.textContent = '🔄 リセットして再挑戦';
+        btnNext.onclick = resetQuiz;
+        qRemaining.textContent = '完了';
+        return;
+      }
+      btnNext.textContent = '▶ 次の問題';
+      btnNext.onclick = nextQuestion;
+      answered = false;
+      currentQIndex = orderIndex;
+      const q = questionOrder[currentQIndex];
+      orderIndex++;
+      // Category badge
+      const catNames = {
+        antiarrhythmic: '💊 抗不整脈薬',
+        ht: '🩸 高血圧',
+        af: '❤️ 心房細動(AF)',
+        vt: '⚡ VT',
+        psvt: '🔍 PSVT',
+        ecg: '📈 心電図'
+      };
+      const catBadge = catNames[q.category] || q.category;
+      // Tags
+      const tagsHtml = q.tags ? q.tags.map(t => `<span class="tag tag-${t.c}">${t.t}</span>`).join('') : '';
+      // Build options HTML
+      const labels = ['A', 'B', 'C', 'D'];
+      const optionsHtml = q.options.map((opt, i) =>
+        `<button class="opt-btn" onclick="selectAnswer(${i}, this)" id="opt${i}">${labels[i]}. ${escapeHtml(opt)}</button>`
+      ).join('');
+      addBotMessage(`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+      <span style="font-size:0.7rem;background:var(--panel);padding:2px 8px;border-radius:4px;">${catBadge}</span>
+      <span style="font-size:0.7rem;color:var(--text-dim);">Q${orderIndex}/${filteredQuestions.length}</span>
+      ${tagsHtml}
+    </div>
+    <div style="font-weight:600;margin-bottom:2px;">${escapeHtml(q.text)}</div>
+    <div class="options">${optionsHtml}</div>
+    <div class="feedback" id="feedback"></div>
+  `);
+      updateScores();
+      scrollToBottom();
+    }
+
+    function selectAnswer(index, btnEl) {
+      if (answered) return;
+      answered = true;
+      const q = questionOrder[currentQIndex];
+      const isCorrect = (index === q.correct);
+      const labels = ['A', 'B', 'C', 'D'];
+      // Disable all buttons and highlight
+      const allBtns = btnEl.parentElement.querySelectorAll('.opt-btn');
+      allBtns.forEach((b, i) => {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('correct-choice');
+        if (i === index && !isCorrect) b.classList.add('wrong-choice');
+      });
+      // Show user choice
+      addUserMessage(`${labels[index]}. ${q.options[index]}`);
+      // Score
+      if (isCorrect) {
+        scoreCorrect++;
+        streak++;
+        const feedbackEl = document.getElementById('feedback');
+        if (feedbackEl) {
+          feedbackEl.className = 'feedback correct show';
+          feedbackEl.innerHTML = `✅ <strong>正解！</strong><br>${q.explanation}`;
+        }
+      } else {
+        scoreWrong++;
+        streak = 0;
+        const feedbackEl = document.getElementById('feedback');
+        if (feedbackEl) {
+          feedbackEl.className = 'feedback wrong show';
+          feedbackEl.innerHTML = `❌ <strong>不正解</strong>（正解は ${labels[q.correct]}）<br>${q.explanation}`;
+        }
+      }
+      updateScores();
+      scrollToBottom();
+    }
+    // ── Init ──
+    filterCategory();
+  </script>
+</body>
+
+</html>
+    
+  </body>
+  
+</html>
